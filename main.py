@@ -59,7 +59,7 @@ class DoxieAutomator(SingleInstance):
 
             filename = self.process_filename(file, 'pdf', counter, len(files))
             image = self.retrieve_image(file)
-            self.store_image(filename, image)
+            self.store_file(filename, image)
             self.delete_original(file)
 
             counter += 1
@@ -87,10 +87,10 @@ class DoxieAutomator(SingleInstance):
             return u'%s-%s.%s'%(timestr, counter, filetype)
         return u'%s.%s'%(timestr, filetype)
 
-    def store_image(self, filename, image):
+    def store_file(self, filename, image):
         image_path = u'%s/%s'%(settings.DOXIE_FOLDER, filename)
         self.log('Saving new scan to %s'%(image_path))
-        image.convert('RGB').save(image_path)
+        image.convert('RGB').save(image_path, "PDF", Quality = 100)
 
     def delete_original(self, original):
         self.log('Clearing %s from Doxie.'%(original))
