@@ -1,33 +1,49 @@
-import urllib2, base64
+import requests
+import time
+from requests.auth import HTTPBasicAuth
+from PIL import Image # $ pip install pillow
+
 import json
 
 from base import SingleInstance
 import settings
 
 class DoxieAutomator(SingleInstance):
+    scanner_online = False
+
     def loop(self):
         
         files = self.get_latest_images()
-        print files
-        cleaned_files = self.prepare_images(files)
+        status = self.prepare_and_store_images(files)
 
     
     def get_all_scans_url(self):
         return u'%s/scans.json'%(settings.DOXIE_SERVER)
 
     def get_latest_images(self):
-        print self.get_all_scans_url()
         
-        request = urllib2.Request( self.get_all_scans_url() )
         if settings.DOXIE_USERNAME and settings.DOXIE_PASSWORD:
-            base64string = base64.b64encode('%s:%s' % (settings.DOXIE_USERNAME, settings.DOXIE_PASSWORD))
-            request.add_header("Authorization", "Basic %s" % base64string)   
-        f = urllib2.urlopen(request)
+            r = requests.get(self.get_all_scans_url(), auth=(settings.DOXIE_USERNAME, settings.DOXIE_PASSWORD))
+        else:
+            r = requests.get(self.get_all_scans_url())
+        
         
         try:
-            scans_json = json.loads( f.read() )
+            scans_json = json.loads( r.text )
+
+            if self.scanner_online == False:
+                self.log(u"Doxie online")
+            self.scanner_online = True
+            
+            if len(scans_json) > 0:
+                self.log(u"Detected %s new scans"%(len(scans_json)))
+
         except ValueError, e:
             scans_json = None
+
+            if self.scanner_online == True:
+                self.log("Doxie offline")
+            self.scanner_online = False
         
         if scans_json:
             return [ u'%s/scans%s'%(settings.DOXIE_SERVER, scan["name"]) for scan in scans_json]
@@ -35,12 +51,52 @@ class DoxieAutomator(SingleInstance):
 
         return []
 
-    def prepare_images(self, files):
-        return files
+    def prepare_and_store_images(self, files):
 
-    def upload_images(self, images):
-        print 'upload imges'
-        print images
+        
+        counter = 1
+        for file in files:
+
+            filename = self.process_filename(file, 'pdf', counter, len(files))
+            image = self.retrieve_image(file)
+            self.store_image(filename, image)
+            self.delete_original(file)
+
+            counter += 1
+
+
+    def retrieve_image(self, url):
+        #TODO: Load and convert image data.
+        self.log('Retrieving %s from Doxie'%(url))
+        if settings.DOXIE_USERNAME and settings.DOXIE_PASSWORD:
+            r = requests.get(url, auth=(settings.DOXIE_USERNAME, settings.DOXIE_PASSWORD), stream=True)
+        else:
+            r = requests.get(url, stream=True)
+
+        r.raw.decode_content = True # Content-Encoding
+        im = Image.open(r.raw) #NOTE: it requires pillow 2.8+
+        
+        return im
+
+    
+
+    def process_filename(self, filename, filetype, counter, total):
+        timestr = time.strftime("%Y-%m-%d_%H-%M-%S")
+
+        if total > 1:
+            return u'%s-%s.%s'%(timestr, counter, filetype)
+        return u'%s.%s'%(timestr, filetype)
+
+    def store_image(self, filename, image):
+        image_path = u'%s/%s'%(settings.DOXIE_FOLDER, filename)
+        self.log('Saving new scan to %s'%(image_path))
+        image.convert('RGB').save(image_path)
+
+    def delete_original(self, original):
+        self.log('Clearing %s from Doxie.'%(original))
+        r = requests.delete(original)
+        print r.text
+
 
 
 

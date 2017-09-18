@@ -57,6 +57,9 @@ class SingleInstance:
             # logger.exception(err)
             raise # for debugging porpuses, do not raise it on production
 
+    def log(self, message):
+        #TODO -- hook up with Python logging
+        print message
 
     def loop(self):
         #Override in subclass
