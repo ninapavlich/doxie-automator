@@ -9,6 +9,12 @@ Feel free to add bugs or feature suggestions in the "issues" section.
 
 To run:
 
-1) Rename example.env to .env and update the DOXIE_USERNAME and DOXIE_PASSWORD if applicable
+0) Ensure you have virtualenv and pip installed
 
-2) Open a terminal window, navigate to this folder, and run "python main.py"
+1) Clone this repository
+
+3) Rename example.env to .env and update the DOXIE_USERNAME, DOXIE_PASSWORD and DOXIE_FOLDER
+
+4) Create a virtual environment and install requirements with pip
+
+5) Run "python main.py" 
