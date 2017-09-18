@@ -17,7 +17,9 @@ class SingleInstance:
     def __init__(self):
         self.fh = None
         self.is_running = False
+        self.initialize()
         self.do_magic()
+
 
     def do_magic(self):
         if OS_WIN:

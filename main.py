@@ -11,6 +11,10 @@ import settings
 class DoxieAutomator(SingleInstance):
     scanner_online = False
 
+    def initialize(self):
+        self.log(u"Looking for Doxie on %s"%(settings.DOXIE_SERVER))
+        
+
     def loop(self):
         
         files = self.get_latest_images()
@@ -21,6 +25,7 @@ class DoxieAutomator(SingleInstance):
         return u'%s/scans.json'%(settings.DOXIE_SERVER)
 
     def get_latest_images(self):
+        
         
         if settings.DOXIE_USERNAME and settings.DOXIE_PASSWORD:
             r = requests.get(self.get_all_scans_url(), auth=(settings.DOXIE_USERNAME, settings.DOXIE_PASSWORD))
