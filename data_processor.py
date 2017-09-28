@@ -6,6 +6,9 @@ from PIL import Image # $ pip install pillow
 from os import listdir
 from os.path import isfile, join
 from collections import defaultdict
+from datetime import datetime
+import pickle
+
 
 # Load libraries
 import pandas
@@ -35,6 +38,7 @@ class TrainerDataProcessor(SingleInstance):
     LOCK_PATH = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "TrainerDataProcessor-lock")
     TRAIN_DATA_FOLDER = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "data", "train")
     TEST_FOLDER = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "data", "test")
+    DATA_FOLDER = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "data")
 
     def initialize(self):
         self.log(u"Processing data in %s"%(TrainerDataProcessor.TRAIN_DATA_FOLDER))
@@ -47,7 +51,7 @@ class TrainerDataProcessor(SingleInstance):
         print(dataset.shape)
         print(dataset.head(20))
         print(dataset.describe())    
-        print(dataset.groupby('is_doc').size())
+        print(dataset.groupby('type').size())
 
         # box and whisker plots
         dataset.plot(kind='box', subplots=True, layout=(5,2), sharex=False, sharey=False)
@@ -101,6 +105,10 @@ class TrainerDataProcessor(SingleInstance):
         plt.show()
         
 
+        print 'X_train'
+        print X_train
+        print 'Y_train'
+        print Y_train
 
         # Make predictions on validation dataset
         print "LogisticRegression model:"
@@ -118,6 +126,14 @@ class TrainerDataProcessor(SingleInstance):
         print(accuracy_score(Y_validation, predictions))
         print(confusion_matrix(Y_validation, predictions))
         print(classification_report(Y_validation, predictions))
+
+
+        # Dump the trained decision tree classifier with Pickle
+        FORMAT = '%Y%m%d%H%M%S'
+        decision_tree_pkl_filename = '%s/doc_type_classifier.pkl'%(TrainerDataProcessor.DATA_FOLDER)
+        decision_tree_model_pkl = open(decision_tree_pkl_filename, 'wb')
+        pickle.dump(lr, decision_tree_model_pkl)
+        decision_tree_model_pkl.close()
 
 
 if __name__ == "__main__":

@@ -22,6 +22,9 @@ class SingleInstance:
         self.initialize()
         self.do_magic()
 
+    def initialize(self):
+        pass
+
     def do_magic(self):
         
         if OS_WIN:
