@@ -46,7 +46,7 @@ def read(env_file=".env"):
 
 # -- Read .env Variables
 # env.read("%s/.env" % os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)))
-read(".env")
+read(env_file=".env")
 
 DOXIE_SERVER = get("DOXIE_SERVER")
 DOXIE_USERNAME = get("DOXIE_USERNAME")

@@ -18,3 +18,14 @@ To run:
 4) Create a virtual environment and install requirements with pip
 
 5) Run "python main.py" 
+
+
+TODO:
+1. Determine if given an image, it is a document, photo or drawing.
+2. Determine if given two or more sequential images, if they should be grouped together as a PDF
+3. Detect text on an image:
+3a. Given a whole set of documents, suggest the file keywords
+3b. Given a whole set of documents, suggest categories for them to be grouped in
+3c. Make a best guess at what the filename should be
+
+ 
