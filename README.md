@@ -1,3 +1,5 @@
+*NOTE: This project is in development and not yet functional*
+
 Doxie Automator
 
 
@@ -27,5 +29,7 @@ TODO:
 3a. Given a whole set of documents, suggest the file keywords
 3b. Given a whole set of documents, suggest categories for them to be grouped in
 3c. Make a best guess at what the filename should be
+4. Auto-rotate image if there is blackspace in the margins
+5. Create a rule workflow so that given certain conditions, a file would be sent to the appropriate place (e.g. A document with keyword Michael would be sent to Michael's Dropbox, vs Nina's would be sent to Nina's email)
 
  
