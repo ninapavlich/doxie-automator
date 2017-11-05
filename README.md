@@ -1,3 +1,5 @@
+*NOTE: This project is in development and not yet functional*
+
 Doxie Automator
 
 
