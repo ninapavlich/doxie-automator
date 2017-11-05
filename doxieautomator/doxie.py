@@ -1,11 +1,12 @@
 import os
 import sys
-import requests
 import time
-from requests.auth import HTTPBasicAuth
-from PIL import Image # $ pip install pillow
-
 import json
+
+import requests
+from requests.auth import HTTPBasicAuth
+from PIL import Image
+
 
 from base import SingleInstance
 import settings
@@ -93,7 +94,6 @@ class DoxieAutomator(SingleInstance):
 
 
     def retrieve_image(self, url):
-        #TODO: Load and convert image data.
         self.log('Retrieving %s from Doxie'%(url))
         if settings.DOXIE_USERNAME and settings.DOXIE_PASSWORD:
             r = requests.get(url, auth=(settings.DOXIE_USERNAME, settings.DOXIE_PASSWORD), stream=True)
