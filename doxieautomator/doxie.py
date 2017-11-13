@@ -86,8 +86,18 @@ class DoxieAutomator(SingleInstance):
 
             filename = self.process_filename(file, 'pdf', counter, len(files))
             image = self.retrieve_image(file)
-            self.store_file(filename, image)
-            self.delete_original(file)
+
+            retrieve_successful = False
+            try:
+                retrieve_successful = self.store_file(filename, image)
+                
+            except IOError as e:
+                self.log(u"I/O error({0}) on {1}: {2}".format(e.errno, filename, e.strerror))
+
+            if retrieve_successful == True:
+                self.delete_original(file)
+            else:
+                self.log(u"Skipping deleting file %s since retrieval was not successful"%(filename))
 
             counter += 1
 
@@ -125,6 +135,8 @@ class DoxieAutomator(SingleInstance):
         image_path = u'%s/%s'%(doxie_file_folder, filename)
         self.log('Saving new scan to %s'%(image_path))
         image.convert('RGB').save(image_path, "PDF", Quality = 100)
+
+        return True
 
     def delete_original(self, original):
 
