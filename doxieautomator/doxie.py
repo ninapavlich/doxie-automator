@@ -15,6 +15,8 @@ import settings
 class DoxieAutomator(SingleInstance):
     scanner_online = False
 
+    DELETE_ON_CORRUPTED = True #If true, delete a file that has an IO error. This happens when the file on the doxie is corrupted.
+
     
     LOCK_PATH = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "DoxieAutomator-lock")
 
@@ -94,7 +96,7 @@ class DoxieAutomator(SingleInstance):
             except IOError as e:
                 self.log(u"I/O error({0}) on {1}: {2}".format(e.errno, filename, e.strerror))
 
-            if retrieve_successful == True:
+            if retrieve_successful == True or DoxieAutomator.DELETE_ON_CORRUPTED:
                 self.delete_original(file)
             else:
                 self.log(u"Skipping deleting file %s since retrieval was not successful"%(filename))
@@ -109,9 +111,10 @@ class DoxieAutomator(SingleInstance):
         else:
             r = requests.get(url, stream=True)
 
-        r.raw.decode_content = True # Content-Encoding
-        im = Image.open(r.raw) #NOTE: it requires pillow 2.8+
-        
+        r.raw.decode_content = True
+        im = Image.open(r.raw)
+
+    
         return im
 
     
