@@ -15,14 +15,13 @@ import settings
 class DoxieAutomator(SingleInstance):
     scanner_online = False
 
-    TEMP_FOLDER = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "tmp")
+    
     LOCK_PATH = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "DoxieAutomator-lock")
 
     def initialize(self):
         self.log(u"Looking for Doxie on %s"%(settings.DOXIE_SERVER))
 
-        if not os.path.exists(DoxieAutomator.TEMP_FOLDER):
-            os.makedirs(DoxieAutomator.TEMP_FOLDER)
+        
         
 
     def loop(self):
@@ -115,10 +114,20 @@ class DoxieAutomator(SingleInstance):
         return u'%s.%s'%(timestr, filetype)
 
     def store_file(self, filename, image):
-        image_path = u'%s/%s'%(DoxieAutomator.TEMP_FOLDER, filename)
+
+        timestr = time.strftime("%Y-%m-%d")
+        doxie_file_folder = u'%s/%s'%(settings.DOXIE_FOLDER, timestr)
+        
+
+        if not os.path.exists(doxie_file_folder):
+            os.makedirs(doxie_file_folder)
+        
+        image_path = u'%s/%s'%(doxie_file_folder, filename)
         self.log('Saving new scan to %s'%(image_path))
         image.convert('RGB').save(image_path, "PDF", Quality = 100)
 
     def delete_original(self, original):
+
         self.log('Clearing %s from Doxie.'%(original))
         r = requests.delete(original)
+        

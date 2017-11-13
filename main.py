@@ -13,7 +13,7 @@ if __name__ == "__main__":
         
         while True:
             doxie.loop()
-            time.sleep(5)
+            time.sleep(30)
 
     finally:
         doxie.clean_up()
