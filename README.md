@@ -1,11 +1,8 @@
-*NOTE: This project is in development and not yet functional*
-
 Doxie Automator
 
+This python script automatically retrieves scans on your Doxie Go or Doxie Q, places them in a directory on your computer.
 
-This python service automatically retrieves scans on your Doxie Go or Doxie Q, places them in a directory on your computer.
-
-This application is just a prototype at this point, and doesn't have any GUI. But you *can* run this application through a terminal if helpful. 
+This application is just a command-line prototype at this point, and doesn't have any GUI. To run this application, you will need to manually run it through the command line. (See instructions below)
 
 Feel free to add bugs or feature suggestions in the "issues" section.
 
