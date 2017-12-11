@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import json
+import cStringIO
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -112,9 +113,22 @@ class DoxieAutomator(SingleInstance):
             r = requests.get(url, stream=True)
 
         r.raw.decode_content = True
-        im = Image.open(r.raw)
 
-    
+        #If the image file on Doxie is .PDF, PIL doesn't process it properly.
+        #A workaround is to dump the http request content into a cStriongIO,
+        #the advantage is that it can be reused without having to make
+        #another requests to Doxie. This way if errors are thrown we can try
+        #again with a different method.
+
+        csi = cStringIO.StringIO()
+        csi.write(r.raw.read())
+        csi.seek(0)#rewind
+        try:
+            im = Image.open(csi)
+        except IOError:
+            self.log('%s not a .jpg file. Probably a .pdf file.'%(url))
+            csi.seek(0)#rewind
+            return csi
         return im
 
     
@@ -137,7 +151,16 @@ class DoxieAutomator(SingleInstance):
         
         image_path = u'%s/%s'%(doxie_file_folder, filename)
         self.log('Saving new scan to %s'%(image_path))
-        image.convert('RGB').save(image_path, "PDF", Quality = 100)
+        
+        # At this point image is either a PIL.Image, or just a raw
+        # IO object
+        
+        try:
+            image.convert('RGB').save(image_path, "PDF", Quality = 100)
+        except AttributeError:
+            image.seek(0)#rewind
+            with open(image_path,'w') as destination:
+                destination.write(image.read())
 
         return True
 
