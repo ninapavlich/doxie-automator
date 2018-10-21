@@ -3,6 +3,7 @@ import sys
 import time
 import json
 import cStringIO
+import logging
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -18,43 +19,45 @@ class DoxieAutomator(SingleInstance):
 
     DELETE_ON_CORRUPTED = True #If true, delete a file that has an IO error. This happens when the file on the doxie is corrupted.
 
-    
     LOCK_PATH = os.path.join(os.path.abspath(os.path.dirname(sys.argv[0])), "DoxieAutomator-lock")
+
+    _observers = []
 
     def initialize(self):
         self.log(u"Looking for Doxie on %s"%(settings.DOXIE_SERVER))
+        self._observers = []
+        self.loop()
 
-        
-        
 
     def loop(self):
-        
-        files = self.get_latest_images()
-        status = self.prepare_and_store_images(files)
+        files = self._get_latest_images()
+        status = self._prepare_and_store_images(files)
 
+    def bind_to(self, callback):
+        self._observers.append(callback)
     
-    def get_all_scans_url(self):
+    def _get_all_scans_url(self):
         return u'%s/scans.json'%(settings.DOXIE_SERVER)
 
-    def get_latest_images(self):
+    def _get_latest_images(self):
         
         
         try:
             if settings.DOXIE_USERNAME and settings.DOXIE_PASSWORD:
-                r = requests.get(self.get_all_scans_url(), auth=(settings.DOXIE_USERNAME, settings.DOXIE_PASSWORD))
+                r = requests.get(self._get_all_scans_url(), auth=(settings.DOXIE_USERNAME, settings.DOXIE_PASSWORD))
             else:
-                r = requests.get(self.get_all_scans_url())
+                r = requests.get(self._get_all_scans_url())
         except requests.exceptions.Timeout:
             # Maybe set up for a retry, or continue in a retry loop
-            self.log(u'Timeout trying to connect to %s'%(self.get_all_scans_url()))
+            self.log(u'Timeout trying to connect to %s'%(self._get_all_scans_url()))
             return []
         except requests.exceptions.TooManyRedirects:
             # Tell the user their URL was bad and try a different one
-            self.log(u'Too many redirect when trying to connect to %s'%(self.get_all_scans_url()))
+            self.log(u'Too many redirect when trying to connect to %s'%(self._get_all_scans_url()))
             return []
         except requests.exceptions.RequestException as e:
             # catastrophic error. bail.
-            self.log(u'Error when trying to connect to %s: %s'%(self.get_all_scans_url(), str(e)))
+            self.log(u'Error when trying to connect to %s: %s'%(self._get_all_scans_url(), str(e)))
             return []
             
         
@@ -81,31 +84,34 @@ class DoxieAutomator(SingleInstance):
 
         return []
 
-    def prepare_and_store_images(self, files):
+    def _prepare_and_store_images(self, files):
 
-        
         counter = 1
         for file in files:
 
-            filename = self.process_filename(file, 'pdf', counter, len(files))
-            image = self.retrieve_image(file)
+            filename = self._process_filename(file, 'pdf', counter, len(files))
+            image = self._retrieve_image(file)
 
             retrieve_successful = False
             try:
-                retrieve_successful = self.store_file(filename, image)
+                retrieve_successful, local_filename = self._store_file(filename, image)
                 
             except IOError as e:
                 self.log(u"I/O error({0}) on {1}: {2}".format(e.errno, filename, e.strerror))
 
             if retrieve_successful == True or DoxieAutomator.DELETE_ON_CORRUPTED:
-                self.delete_original(file)
+                self._delete_original(file)
             else:
                 self.log(u"Skipping deleting file %s since retrieval was not successful"%(filename))
+
+            if retrieve_successful:
+                for callback in self._observers:
+                    callback(local_filename)
 
             counter += 1
 
 
-    def retrieve_image(self, url):
+    def _retrieve_image(self, url):
         self.log('Retrieving %s from Doxie'%(url))
         if settings.DOXIE_USERNAME and settings.DOXIE_PASSWORD:
             r = requests.get(url, auth=(settings.DOXIE_USERNAME, settings.DOXIE_PASSWORD), stream=True)
@@ -133,14 +139,14 @@ class DoxieAutomator(SingleInstance):
 
     
 
-    def process_filename(self, filename, filetype, counter, total):
+    def _process_filename(self, filename, filetype, counter, total):
         timestr = time.strftime("%Y-%m-%d_%H-%M-%S")
 
         if total > 1:
             return u'%s-%s.%s'%(timestr, counter, filetype)
         return u'%s.%s'%(timestr, filetype)
 
-    def store_file(self, filename, image):
+    def _store_file(self, filename, image):
 
         timestr = time.strftime("%Y-%m-%d")
         doxie_file_folder = u'%s/%s'%(settings.DOXIE_FOLDER, timestr)
@@ -162,9 +168,9 @@ class DoxieAutomator(SingleInstance):
             with open(image_path,'w') as destination:
                 destination.write(image.read())
 
-        return True
+        return (True, image_path)
 
-    def delete_original(self, original):
+    def _delete_original(self, original):
 
         self.log('Clearing %s from Doxie.'%(original))
         r = requests.delete(original)

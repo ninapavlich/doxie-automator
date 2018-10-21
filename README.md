@@ -16,4 +16,9 @@ To run:
 
 4) Create a virtual environment and install requirements with pip
 
+	virtualenv venv
+    source venv/bin/activate
+    curl https://bootstrap.pypa.io/get-pip.py | python
+    pip install -r requirements.txt
+
 5) Run "python main.py" 

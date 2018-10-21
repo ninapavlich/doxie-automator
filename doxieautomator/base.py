@@ -1,5 +1,6 @@
 import sys
 import os
+import logging
 
 try:
     import fcntl
@@ -49,7 +50,7 @@ class SingleInstance:
 
         
 
-    def clean_up(self):
+    def stop(self):
         # this is not really needed
         try:
             if self.fh is not None:
@@ -65,8 +66,7 @@ class SingleInstance:
             raise # for debugging porpuses, do not raise it on production
 
     def log(self, message):
-        #TODO -- hook up with Python logging
-        print message
+        logging.info(message)
 
     def loop(self):
         #Override in subclass
