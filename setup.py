@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'doxieautomator',
-    version = '0.2',
+    version = '0.21',
     author = 'Nina Pavlich',
     author_email='nina@ninalp.com',
     url = 'https://github.com/ninapavlich/doxie-automator',
@@ -11,6 +11,10 @@ setup(
     keywords = ['libraries', 'scanning'],
     include_package_data = True,
     packages = ['doxieautomator'],
+
+    install_requires=[
+        'Pillow',
+    ],
     
     classifiers=[
         'Development Status :: 4 - Beta',
