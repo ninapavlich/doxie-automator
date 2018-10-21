@@ -1,12 +1,23 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-    name='doxieautomator',    # This is the name of your PyPI-package.
-    version='0.2',                          # Update the version number for new releases
-    scripts=['doxieautomator'],                 # The name of your scipt, and also the command you'll be using for calling it
-    url='https://github.com/ninapavlich/doxie-automator',
-    author='Nina Pavlich',
+    name = 'doxieautomator',
+    version = '0.2',
+    author = 'Nina Pavlich',
     author_email='nina@ninalp.com',
+    url = 'https://github.com/ninapavlich/doxie-automator',
     license = "MIT",
-    include_package_data = True
+    description = 'Retrieves scans on your Doxie Go or Doxie Q, places them in a local directory.',
+    keywords = ['libraries', 'scanning'],
+    include_package_data = True,
+    packages = ['doxieautomator'],
+    
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python'
+    ]
 )
